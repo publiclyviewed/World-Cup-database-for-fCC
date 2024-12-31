@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 if [[ $1 == "test" ]]
 then
@@ -9,33 +9,35 @@ fi
 
 # Do not change code above this line. Use the PSQL variable above to query your database.
 
-
-
 cat games.csv | while IFS="," read YEAR ROUND WINNER OPPONENT WINNER_GOALS OPPONENT_GOALS
 do
   if [[ $YEAR != "year" ]]
   then
-    # GET WINNER ID
+    
     WINNER_ID=$($PSQL "SELECT team_id FROM teams WHERE name='$WINNER'")
     
-    # If not found, insert team
+    
     if [[ -z $WINNER_ID ]]
     then
-      echo $PSQL "INSERT INTO teams(name) VALUES('$WINNER')"
-      
+      echo "Inserting team: $WINNER"
+      $PSQL "INSERT INTO teams(name) VALUES('$WINNER')"
+      WINNER_ID=$($PSQL "SELECT team_id FROM teams WHERE name='$WINNER'")
     fi
 
-    # GET OPPONENT ID
+   
     OPPONENT_ID=$($PSQL "SELECT team_id FROM teams WHERE name='$OPPONENT'")
     
-    # If not found, insert team
+    
     if [[ -z $OPPONENT_ID ]]
     then
-      echo $PSQL "INSERT INTO teams(name) VALUES('$OPPONENT')"
-      
+      echo "Inserting team: $OPPONENT"
+      $PSQL "INSERT INTO teams(name) VALUES('$OPPONENT')"
+      OPPONENT_ID=$($PSQL "SELECT team_id FROM teams WHERE name='$OPPONENT'")
     fi
 
-    # INSERT GAME
+    
+    echo "Inserting game: $YEAR, $ROUND, $WINNER_ID, $OPPONENT_ID, $WINNER_GOALS, $OPPONENT_GOALS"
     $PSQL "INSERT INTO games(winner_id, opponent_id, winner_goals, opponent_goals, year, round) VALUES($WINNER_ID, $OPPONENT_ID, $WINNER_GOALS, $OPPONENT_GOALS, $YEAR, '$ROUND')"
   fi
 done
+
